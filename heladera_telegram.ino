@@ -69,6 +69,8 @@ void loop(){
     Serial.print("Mensaje recibido : ");
     Serial.println(msg.text);
 
+    if(msg.sender.id == id){
+
     if (msg.messageType == CTBotMessageText){
 
       if (msg.text.equalsIgnoreCase("Teclado")){
@@ -127,6 +129,10 @@ void loop(){
       }
 
     }
+
+  } else{
+    myBot.sendMessage(msg.sender.id, "SALI CABEZA DE MONO");
+  }
 
   }
 
