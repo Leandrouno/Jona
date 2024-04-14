@@ -5,8 +5,8 @@
 #define ESTADO_HELADERA_CALLBACK "Estado"
 
 #define LED D1     //si queres podes ponerle un led para saber si esta concetado al wifi
-#define HELADERA D5 // pin que activa el rele
-#define PULSADOR  D4 // pin para el pulsador que activa o desactiva el rele
+#define HELADERA D2 // pin que activa el rele
+#define PULSADOR  D7 // pin para el pulsador que activa o desactiva el rele
 
 int BanderaBoton=0;
 volatile bool BanderaBotonPresionado = false;
@@ -15,12 +15,12 @@ CTBot myBot;
 CTBotReplyKeyboard myKbd;
 bool isKeyboardActive;
 
-String ssid = "NOMBREWIFI";
-String pass = "CONTRASEÑAWIFI";
-String token = "TOKENDETELEGRAM";
+String ssid = "";
+String pass = "";
+String token = "";
 String estadoHeladeraTexto = "";
 int estadoRele = 0;
-long id = 5454545454545454;  //chat_id sin comillas de telegram
+long id = ;  //chat_id sin comillas de telegram
 
 void setup(){
 
@@ -55,7 +55,8 @@ void setup(){
  myKbd.enableResize();
  isKeyboardActive = false;
 //fin teclado
-
+myBot.sendMessage(id, "Sistema iniciado");
+Serial.println("Mensaje enviado a telegram");
 }
 
 void loop(){
@@ -65,6 +66,8 @@ void loop(){
   TBMessage msg;
 
   if (myBot.getNewMessage(msg)){
+    Serial.print("Mensaje recibido : ");
+    Serial.println(msg.text);
 
     if (msg.messageType == CTBotMessageText){
 
@@ -78,7 +81,7 @@ void loop(){
       if (msg.text.equalsIgnoreCase("HeladeraON")){
 
         digitalWrite(HELADERA, LOW);
-        myBot.sendMessage(msg.sender.id, "Heleadera encendida");
+        myBot.sendMessage(msg.sender.id, "Heladera encendida");
         estadoHeladeraTexto = "Heladera encendida";
         estadoRele = 1;
 
@@ -87,7 +90,7 @@ void loop(){
       if (msg.text.equalsIgnoreCase("HeladeraOFF")){
 
         digitalWrite(HELADERA, HIGH);
-        myBot.sendMessage(msg.sender.id, "Heleadera apagadaa");
+        myBot.sendMessage(msg.sender.id, "Heladera apagadaa");
         estadoHeladeraTexto = "Heladera apagada";
         estadoRele = 0;
 
