@@ -2,7 +2,7 @@
 
 #define HELADERA_ON_CALLBACK "HeladeraON"
 #define HELADERA_OFF_CALLBACK "HeladeraOFF"
-#define ESTADO_HELADERA "Estado"
+#define ESTADO_HELADERA_CALLBACK "Estado"
 
 #define LED D1     //si queres podes ponerle un led para saber si esta concetado al wifi
 #define HELADERA D5 // pin que activa el rele
@@ -18,7 +18,9 @@ bool isKeyboardActive;
 String ssid = "NOMBREWIFI";
 String pass = "CONTRASEÑAWIFI";
 String token = "TOKENDETELEGRAM";
-long id = ;  //chat_id sin comillas de telegram
+String estadoHeladeraTexto = "";
+int estadoRele = 0;
+long id = 5454545454545454;  //chat_id sin comillas de telegram
 
 void setup(){
 
@@ -54,9 +56,6 @@ void setup(){
  isKeyboardActive = false;
 //fin teclado
 
-String estadoHeladeraTexto = "";
-int estadoRele = 0;
-
 }
 
 void loop(){
@@ -78,7 +77,7 @@ void loop(){
 
       if (msg.text.equalsIgnoreCase("HeladeraON")){
 
-        digitalWrite(Heladera, LOW);
+        digitalWrite(HELADERA, LOW);
         myBot.sendMessage(msg.sender.id, "Heleadera encendida");
         estadoHeladeraTexto = "Heladera encendida";
         estadoRele = 1;
@@ -87,7 +86,7 @@ void loop(){
 
       if (msg.text.equalsIgnoreCase("HeladeraOFF")){
 
-        digitalWrite(Heladera, HIGH);
+        digitalWrite(HELADERA, HIGH);
         myBot.sendMessage(msg.sender.id, "Heleadera apagadaa");
         estadoHeladeraTexto = "Heladera apagada";
         estadoRele = 0;
@@ -112,14 +111,14 @@ void loop(){
         myBot.endQuery(msg.callbackQueryID, estadoHeladeraTexto, true);
       }
 
-      if (msg.callbackQueryData.equals(HELADERA_OF_CALLBACK)){
+      if (msg.callbackQueryData.equals(HELADERA_OFF_CALLBACK)){
 
         digitalWrite(HELADERA, HIGH);
         estadoHeladeraTexto = "Heladera apagada";
         myBot.endQuery(msg.callbackQueryID, estadoHeladeraTexto, true);
       }
 
-      if (msg.callbackQueryData.equals(ESTADO_CALLBACK)){
+      if (msg.callbackQueryData.equals(ESTADO_HELADERA_CALLBACK)){
 
         myBot.endQuery(msg.callbackQueryID, estadoHeladeraTexto, true);
       }
@@ -131,7 +130,7 @@ void loop(){
   delay(500);
 }
 
-void BotonPresionado() {    
+ICACHE_RAM_ATTR  void BotonPresionado() {    
                         int button = digitalRead(PULSADOR);
                         if(button == LOW && BanderaBoton == 0){
                           BanderaBotonPresionado = true; //aca levanto la bandera para avisar que el boton fue presionado
