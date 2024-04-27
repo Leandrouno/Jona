@@ -1,0 +1,146 @@
+#include <SPI.h>
+#include <MFRC522.h>
+#include <FS.h> 
+#define SS_PIN D8
+#define RST_PIN D0
+#define LED_RFID D2
+#define PULSADORGRABA D4
+#define PULSADORBORRA D3
+MFRC522 rfid(SS_PIN, RST_PIN);
+MFRC522::MIFARE_Key key;
+
+String tarjetasRegistradas = ""; // Para almacenar las tarjetas registradas
+
+void setup() {
+    SPI.begin();      
+    rfid.PCD_Init(); 
+    pinMode(LED_RFID, OUTPUT);
+    digitalWrite(LED_RFID, LOW);
+    
+    pinMode(PULSADORGRABA, INPUT_PULLUP);
+    pinMode(PULSADORBORRA, INPUT_PULLUP);
+
+    Serial.begin(9600);
+    
+    if (!SPIFFS.begin()) {
+        Serial.println("Error al iniciar SPIFFS");
+    } else {
+        cargarTarjetasRegistradas(); // Carga las tarjetas registradas
+    }
+    
+    Serial.println("Aproxime la tarjeta al lector...");
+}
+
+void loop() {
+    // Si se pulsa el botón para registrar
+    if (digitalRead(PULSADORGRABA) == LOW) {
+        if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+            guardarTarjeta(); // Guarda la tarjeta cuando se pulsa el botón
+        }
+    }
+
+    // Si se pulsa el botón para borrar
+    if (digitalRead(PULSADORBORRA) == LOW) {
+        borrarTarjetas(); // Borra todas las tarjetas si el pulsador está alto
+    }
+    
+    if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+        manejo_tarjeta();  // Procesa la tarjeta
+    }
+}
+
+void manejo_tarjeta() {
+    String contenido = obtenerIDTarjeta();
+    contenido.trim(); // Asegura que el contenido no tenga espacios adicionales
+    Serial.print("Código de Tarjeta: ");
+    Serial.println(contenido);
+
+    Serial.print("Tarjetas Registradas: ");
+    Serial.println(tarjetasRegistradas);
+
+    // Compara el contenido ya ajustado para verificar si está registrado
+    if (tarjetasRegistradas.indexOf(contenido) != -1) {
+        Serial.println("Tarjeta registrada. Abriendo compuerta...");
+        digitalWrite(LED_RFID, HIGH);    
+        delay(1000);             
+        digitalWrite(LED_RFID, LOW); 
+    } else {
+        Serial.println("Tarjeta no registrada");
+        parpadeoLED(); // Parpadeo de LED como alerta
+    }
+}
+
+
+
+void guardarTarjeta() {
+    String id = obtenerIDTarjeta();
+    if (tarjetasRegistradas.indexOf(id) == -1) { // Solo si no está registrada
+        tarjetasRegistradas += id + "\n"; // Agrega la nueva tarjeta a la lista
+        Serial.println("Registrando nueva tarjeta: " + id);
+        File archivo = SPIFFS.open("/tarjetas.txt", "a");
+        if (archivo) {
+            archivo.println(id); // Guarda en el archivo
+            archivo.close();
+            Serial.println("Tarjeta registrada y guardada.");
+        } else {
+            Serial.println("Error al abrir archivo para guardar.");
+        }
+    } else {
+        Serial.println("Tarjeta ya está registrada, no se agregará.");
+    }
+}
+
+
+void borrarTarjetas() {
+    if (SPIFFS.exists("/tarjetas.txt")) { // Si el archivo existe
+        SPIFFS.remove("/tarjetas.txt"); // Elimina el archivo
+        tarjetasRegistradas = ""; // Limpia la lista en memoria
+        Serial.println("Todas las tarjetas han sido eliminadas.");
+    } else {
+        Serial.println("No hay tarjetas guardadas para borrar.");
+    }
+}
+
+String obtenerIDTarjeta() {
+    String contenido = "";
+    for (byte i = 0; i < rfid.uid.size; i++) {
+        contenido.concat(String(rfid.uid.uidByte[i] < 0x10 ? " 0" : " ")); // Formato con espacios
+        contenido.concat(String(rfid.uid.uidByte[i], HEX)); // Formato hexadecimal
+    }
+
+    contenido.trim(); // Elimina espacios al final
+    contenido.toUpperCase(); // Asegura que esté en mayúsculas
+
+    return contenido;
+}
+
+
+void parpadeoLED() {
+    for (int i = 0; i < 3; i++) {
+        digitalWrite(LED_RFID, HIGH);
+        delay(100);           
+        digitalWrite(LED_RFID, LOW);
+        delay(100);
+    }
+}
+
+void cargarTarjetasRegistradas() {
+    if (SPIFFS.exists("/tarjetas.txt")) {
+        File archivo = SPIFFS.open("/tarjetas.txt", "r");
+        if (archivo) {
+            Serial.println("");
+            Serial.println("Cargando tarjetas.....");
+            while (archivo.available()) {
+                String linea = archivo.readStringUntil('\n');
+                linea.trim(); // Elimina espacios en blanco
+                if (!linea.isEmpty() && tarjetasRegistradas.indexOf(linea) == -1) { // Verifica si ya está en la lista
+                    tarjetasRegistradas += linea + "\n"; // Agrega a la lista
+                    Serial.println("Tarjeta registrada: " + linea);
+                }
+            }
+            archivo.close();
+            Serial.println("Tarjetas cargadas: " + tarjetasRegistradas);
+        }
+    }
+}
+
