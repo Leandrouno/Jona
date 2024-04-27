@@ -60,7 +60,7 @@ void manejo_tarjeta() {
 
     // Compara el contenido ya ajustado para verificar si está registrado
     if (tarjetasRegistradas.indexOf(contenido) != -1) {
-        Serial.println("Tarjeta registrada. Abriendo compuerta...");
+        abrirCompuerta();
         digitalWrite(LED_RFID, HIGH);    
         delay(1000);             
         digitalWrite(LED_RFID, LOW); 
@@ -144,3 +144,8 @@ void cargarTarjetasRegistradas() {
     }
 }
 
+void abrirCompuerta(){
+
+Serial.println("Tarjeta registrada. Abriendo compuerta...");
+
+}
