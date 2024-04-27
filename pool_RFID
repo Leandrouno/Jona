@@ -70,8 +70,6 @@ void manejo_tarjeta() {
     }
 }
 
-
-
 void guardarTarjeta() {
     String id = obtenerIDTarjeta();
     if (tarjetasRegistradas.indexOf(id) == -1) { // Solo si no está registrada
@@ -88,8 +86,8 @@ void guardarTarjeta() {
     } else {
         Serial.println("Tarjeta ya está registrada, no se agregará.");
     }
+delay(3000);
 }
-
 
 void borrarTarjetas() {
     if (SPIFFS.exists("/tarjetas.txt")) { // Si el archivo existe
