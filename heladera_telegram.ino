@@ -1,6 +1,6 @@
 #include "CTBot.h"
 
-#define HELADERA_ON_CALLBACK "HeladeraON"
+#define HELADERA_ON_CALLBACK "HeladeraON"//enciedo
 #define HELADERA_OFF_CALLBACK "HeladeraOFF"
 #define ESTADO_HELADERA_CALLBACK "Estado"
 
@@ -29,7 +29,7 @@ void setup(){
 
   pinMode(LED, OUTPUT);
   pinMode(HELADERA, OUTPUT);
-  pinMode(PULSADOR, INPUT_PULLUP);
+  pinMode(PULSADOR, INPUT_PULLUP);// resistencia pull up
 
   attachInterrupt(PULSADOR, BotonPresionado, FALLING); // si detecta una interrupcion (pulsador) llama a la funcion BotonPresionado
 
